@@ -16,7 +16,6 @@ RUN apt-get -y install apt-utils \
 ADD requirements.txt .
 RUN pip3 install -r requirements.txt
 ENV FLASK_ENV=development
-EXPOSE 5001
-COPY preprocessing.py /app/preprocessing.py
-COPY /data /app/data
-CMD [ "python3", "./preprocessing.py"]
+EXPOSE 6001
+COPY bigram.py /app/bigram.py
+CMD [ "python3", "./bigram.py"]

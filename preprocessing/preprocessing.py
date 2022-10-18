@@ -5,15 +5,14 @@ import nltk
 import re
 from nltk.corpus import stopwords
 import unicodedata
+from flask import Flask
+app = Flask(__name__)
 nltk.download('stopwords')
 stopwords_list=stopwords.words('english')
 
-opinions = pd.read_csv("./data/deceptive-opinion.csv")
-
 def unicode_to_ascii(s):
     return ''.join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn')
-
-    
+ 
 def clean_data(w):
     w = unicode_to_ascii(w)
     w=w.lower()                        # Lower casing
@@ -26,5 +25,15 @@ def clean_data(w):
     clean_words = [word for word in words if (word not in stopwords_list) and len(word) > 2]
     return " ".join(clean_words)
 
-opinions['text'] = opinions['text'].apply(clean_data)
-print(opinions.head())
+@app.route('/preprocess', methods=['GET'])
+def preprocess():
+    opinions = pd.read_csv("./data/deceptive-opinion.csv")
+    opinions['text'] = opinions['text'].apply(clean_data)
+    opinions.to_csv('cleaned-reviews.csv', index=False)
+    return opinions.to_json()
+
+# get request - ip/port 
+# post - json - workflow manager object
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=5001)
