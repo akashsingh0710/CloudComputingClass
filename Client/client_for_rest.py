@@ -1,32 +1,26 @@
 import requests
 
-while True:
 
-    i=1
+def create_workflow():
+
     workflow_string = ""
-    print("Please enter the image name for workflow component {}:".format(i))
-    while True:
+    print("Please enter the workflow file address: ")
         
-        image = input().strip()
+    workflow_filename = input().strip()
 
-
-        if(image=="done"):
-            r = requests.get("http://10.176.67.108:5000/workflow?param={}".format(workflow_string) )   
-            print(r.text)
-            break
+    with open(workflow_filename) as workflow_file:
         
-
-        if(image=="exit"):
-            print("\nBye Bye!")
-            exit(1)
+        if workflow_file.closed:
+            return
         
+        workflow_string = workflow_file.read()
 
-        workflow_string = workflow_string + " " + image
-        i=i+1
-        print("Please enter the image name for workflow component {}:".format(i))
-
-
-        
+     
+    #r = requests.get("http://10.176.67.108:5000/workflow?param={}".format(workflow_string) )
+    r = requests.get("http://127.0.0.1:5000/workflow?param={}".format(workflow_string) )
+    print(r.text)
+    return
 
 
     
+create_workflow()
