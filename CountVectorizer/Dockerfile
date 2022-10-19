@@ -1,4 +1,4 @@
-FROM debian:10.3-slim
+FROM debian:11-slim
 
 WORKDIR /app
 
@@ -12,10 +12,9 @@ RUN apt-get -y install apt-utils \
     python3-pip \
     python3-numpy \
     python3-pandas
-
 ADD requirements.txt .
 RUN pip3 install -r requirements.txt
 ENV FLASK_ENV=development
-EXPOSE 6001
-COPY bigram.py /app/bigram.py
-CMD [ "python3", "./bigram.py"]
+EXPOSE 6005
+COPY countVec.py /app/countVec.py
+CMD [ "python3", "./countVec.py"]

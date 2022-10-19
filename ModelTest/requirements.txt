@@ -1,0 +1,4 @@
+nltk
+flask
+requests
+scikit-learn

@@ -29,11 +29,7 @@ def clean_data(w):
 def preprocess():
     opinions = pd.read_csv("./data/deceptive-opinion.csv")
     opinions['text'] = opinions['text'].apply(clean_data)
-    opinions.to_csv('cleaned-reviews.csv', index=False)
     return opinions.to_json()
-
-# get request - ip/port 
-# post - json - workflow manager object
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5001)
