@@ -20,12 +20,12 @@ def control():
 	global vmID, managerID, ip_table, container_table, routing_table
 
 	if request.method == 'POST':
-		type = request.form.get('TYPE')
+		type = request.json['TYPE']
 
 		if type == 'INIT':
-			vmID = request.json.get('ID')
-			managerID = request.json.get('MANAGER')
-			ip_table = request.json.get('IPTABLE')
+			vmID = request.json['ID']
+			managerID = request.json['MANAGER']
+			ip_table = request.json['IPTABLE']
 			print('I am a router on %s. My manager is %s.' % (vmID, managerID))
 			print('My ip_table is', str(ip_table))
 			return vmID

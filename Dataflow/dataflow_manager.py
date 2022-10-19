@@ -24,7 +24,7 @@ def getAddr(id, path = None):
 # Thread function to init routers on each machine in the network
 def router_init(id, ip_table):
 	while True:
-		r = requests.post(getAddr(id, 'control'), data={'TYPE':'INIT', 'ID':id, 
+		r = requests.post(getAddr(id, 'control'), json={'TYPE':'INIT', 'ID':id, 
 		'MANAGER':net['Dataflow Manager'], 'IPTABLE':ip_table})
 		if r.status_code == 200 and r.text == id:
 			break
@@ -33,7 +33,7 @@ def router_init(id, ip_table):
 	return
 
 def main():
-	# Get valid machine IDs in network config
+	# Get valid machine IDs from network config
 	vm = []
 	ip_table = {}
 	for k in net.keys():
