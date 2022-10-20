@@ -1,31 +1,12 @@
 {
-    "adjacency": {
-      "service_A": ["1", "2"],
-      "service_B": ["3"]
-    },
-    "components": {
-      "service_A": {
-        "image": "aditichak/image_A"
-      },
-      "service_B": {
-        "image": "aditichak/image_B"
-      },
-      "service_C": {
-        "image": "aditichak/image_C"
-      }
-    },
-    "connections": {
-      "1": {
-        "from": "service_A", 
-        "to": "service_B"
-      },
-      "2": {
-        "from": "service_A", 
-        "to": "service_C"
-      },
-      "3": {
-        "from": "service_B",
-        "to": "service_C"
-      }
-    }
-  }
+    "components": [
+      {"image": "aditichak/image_A"},
+      {"image": "aditichak/image_B"},
+      {"image": "aditichak/image_C"}
+    ],
+    "adjacency": [
+      [1,2],
+      [2],
+      []
+    ]
+}

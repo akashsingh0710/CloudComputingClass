@@ -4,10 +4,11 @@ import requests
 import threading
 import time
 
-#net = json.load(open('./network_config.json', 'r'))
+with open('./network_config.json', 'r') as f:
+	net = json.load(f)
 
 net = {
-	"Dataflow Manager": "M3",
+	"Manager": "M3",
 	"Routing Port": 6060,
 	"M3": "10.176.67.248",
 	"M4": "10.176.67.247",
@@ -25,7 +26,7 @@ def getAddr(id, path = None):
 def router_init(id, ip_table):
 	while True:
 		r = requests.post(getAddr(id, 'control'), json={'TYPE':'INIT', 'ID':id, 
-		'MANAGER':net['Dataflow Manager'], 'IPTABLE':ip_table})
+		'MANAGER':net['Manager'], 'IPTABLE':ip_table})
 		if r.status_code == 200 and r.text == id:
 			break
 		time.sleep(10)

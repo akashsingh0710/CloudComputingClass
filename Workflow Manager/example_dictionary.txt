@@ -1,43 +1,22 @@
 {
-    "adjacency": {
-        "service_A": [
-            "1",
-            "2"
-        ],
-        "service_B": [
-            "3"
-        ]
-    },
-    "components": {
-        "service_A": {
-            "image": "aditichak/image_A",
-            "ip": "10.176.67.248",
-            "port": 5102
-        },
-        "service_B": {
-            "image": "aditichak/image_B",
-            "ip": "10.176.67.247",
-            "port": 5330
-        },
-        "service_C": {
-            "image": "aditichak/image_C",
-            "ip": "10.176.67.246",
-            "port": 5610
-        }
-    },
-    "connections": {
-        "1": {
-            "from": "service_A",
-            "to": "service_B"
-        },
-        "2": {
-            "from": "service_A",
-            "to": "service_C"
-        },
-        "3": {
-            "from": "service_B",
-            "to": "service_C"
-        }
-    },
-    "id": 592890
+    'components': [
+        {'image': 'aditichak/image_A', 
+        'cid': 'C302056', 
+        'machine': 'M4', 
+        'port': 5451}, 
+        {'image': 'aditichak/image_B', 
+        'cid': 'C669000', 
+        'machine': 'M3', 
+        'port': 5084}, 
+        {'image': 'aditichak/image_C', 
+        'cid': 'C670077', 
+        'machine': 'M4', 
+        'port': 5143}
+    ], 
+    'adjacency': [
+        [1, 2], 
+        [2], 
+        []
+    ], 
+    'id': 451739
 }

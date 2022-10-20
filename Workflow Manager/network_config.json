@@ -1,6 +1,7 @@
 {
-	"Dataflow Manager": "M1",
+	"Manager": "M1",
 	"Routing Port": 6060,
+	"WFM Port": 5000,
 	"M1": "csa-6343-93.utdallas.edu",
 	"M2": "csa-6343-103.utdallas.edu",
 	"M3": "10.176.67.248",

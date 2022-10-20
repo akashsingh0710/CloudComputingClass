@@ -19,10 +19,10 @@ def deploy_container(workflow_dict):
         command_1="sudo docker run -it --name "+service+' -p '+port+':'+port+' '+image
         command_list.append(command_1)
         #connect the container to the network
-        command_2="sudo docker network connect --ip "+ip+' '+network+' 'service
+        command_2="sudo docker network connect --ip "+ip+' '+network+' '+service
         command_list.append(command_2)
         #connnect the container to the link-local address
-        command_3="sudo docker network connect --link-local-ip "+ip_table+' '+network+' 'service
+        command_3="sudo docker network connect --link-local-ip "+ip_table+' '+network+' '+service
         command_list.append(command_3)
         
         #run the commands
