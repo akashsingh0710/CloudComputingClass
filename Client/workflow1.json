@@ -1,0 +1,15 @@
+{
+    "components": [
+      {"image": "aditichak/preprocessor-nlp"},
+      {"image": "aditichak/training"},
+      {"image": "aditichak/svc",
+      {"image": "aditichak/modeltest"}
+    }
+    ],
+    "adjacency": [
+      [1],
+      [2],
+      [3],
+      []
+    ]
+}

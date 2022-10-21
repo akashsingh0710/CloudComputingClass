@@ -21,11 +21,11 @@ app = Flask(__name__)
 
 # Override network config for testing purposes
 net = {
-    "Manager": "M3",
-    "Routing Port": 6060,
-    "WFM Port": 5000,
-    "M3": "10.176.67.248",
-    "M4": "10.176.67.247",
+	"Manager": "M1",
+	"Routing Port": 6060,
+	"WFM Port": 5000,
+	"M1": "csa-6343-93.utdallas.edu",
+	"M2": "csa-6343-103.utdallas.edu",
 }
 
 def main():
