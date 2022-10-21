@@ -37,6 +37,7 @@ def deploy_container():
         port = service["port"]
         container_table[service['cid']] = port
         command = "sudo docker run -it"+' -p '+str(port)+':'+str(8080)+' '+service['image']
+        command += ' ' + str(port) + ' ' + getAddr(vmID, path='send') # argv passed to container: [container_port] [router_address]
         subprocess.run(command.split(), stdout=subprocess.PIPE)
         return '200 OK'
     return

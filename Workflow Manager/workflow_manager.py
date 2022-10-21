@@ -109,7 +109,7 @@ def define_deployment(workflow_dict):
     for service in workflow_dict["components"]:
         # Generate service/container ID
         cid = 'C' + str(random.randint(100000,999999))
-        while id in workflows:
+        while id in containers:
             cid = 'C' + str(random.randint(100000, 999999))
         containers.add(cid)
         service['cid'] = cid
@@ -170,6 +170,8 @@ def deploy(workflow_dict):
     for service in wf['components']:
         x = threading.Thread(target=deploy_service, args=(service['machine'],
         {'image':service['image'],'cid':service['cid'], 'port':service['port']}))
+        threads.append(x)
+        x.start()
 
     for t in threads:
         t.join()
