@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
-
+import sys
 import pandas as pd
 import nltk
 import re
 from nltk.corpus import stopwords
 import unicodedata
-from flask import Flask
+from flask import Flask, request
+import requests
+
 app = Flask(__name__)
 nltk.download('stopwords')
 stopwords_list=stopwords.words('english')
@@ -25,11 +27,18 @@ def clean_data(w):
     clean_words = [word for word in words if (word not in stopwords_list) and len(word) > 2]
     return " ".join(clean_words)
 
-@app.route('/preprocess', methods=['GET'])
+@app.route('/datasink', methods=['POST'])
 def preprocess():
     opinions = pd.read_csv("./data/deceptive-opinion.csv")
     opinions['text'] = opinions['text'].apply(clean_data)
-    return opinions.to_json()
+    opinionsDict = {}
+    opinionsDict["WFID"] = request.json["WFID"]
+    opinionsDict["PORT"] = sys.argv[1]
+    address = sys.argv[2]
+    opinionsDict["DATA"] = opinions.to_json()
+    requests.post(address, json=opinionsDict)
+    print("container preprocessing complete")
+    return "200 OK"
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5001)
+    app.run(host='0.0.0.0', port=8080)

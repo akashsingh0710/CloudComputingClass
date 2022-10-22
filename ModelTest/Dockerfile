@@ -16,6 +16,6 @@ RUN apt-get -y install apt-utils \
 ADD requirements.txt .
 RUN pip3 install -r requirements.txt
 ENV FLASK_ENV=development
-EXPOSE 8005
+
 COPY modelTest.py /app/modelTest.py
-CMD [ "python3", "./modelTest.py"]
+ENTRYPOINT [ "python3", "./modelTest.py"]

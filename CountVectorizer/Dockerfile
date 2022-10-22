@@ -15,6 +15,5 @@ RUN apt-get -y install apt-utils \
 ADD requirements.txt .
 RUN pip3 install -r requirements.txt
 ENV FLASK_ENV=development
-EXPOSE 6005
 COPY countVec.py /app/countVec.py
-CMD [ "python3", "./countVec.py"]
+ENTRYPOINT [ "python3", "./countVec.py"]
