@@ -15,17 +15,30 @@ routing_table = {} # (containerID, workflow):set((nextVMID, nextContainerID)) //
 
 # Container Table reverse lookup
 def get_container(port):
-    for c in container_table.keys:
-        if container_table[c] == port:
+  
+    print("port in get_cotainer: ", port)
+    print("port type in get_cotainer: ", type(port))
+    print(container_table)
+
+    for c in container_table.keys():
+        if container_table[c] == int(port):
             return c
     return None
 
 # REST API call destination formatter
 # Takes valid vm ID and optional API path
 def getAddr(vm, port=ROUTING_PORT, path = None):
+
+    print("port" , port)
+    print("routing_port" , ROUTING_PORT)
+    print("path" , path)
+
     global ip_table
-    if path: 
+    if path:
+        print("The string: " , 'http://' + ip_table[vm] + ':' + str(port) + '/' + path) 
         return 'http://' + ip_table[vm] + ':' + str(port) + '/' + path
+
+    print("The string2: " , 'http://' + ip_table[vm] + ':' + str(port))
     return 'http://' + ip_table[vm] + ':' + str(port)
 
 # Container deployment
@@ -36,7 +49,7 @@ def deploy_container():
         service = request.json
         port = service["port"]
         container_table[service['cid']] = port
-        command = "sudo docker run -it"+' -p '+str(port)+':'+str(8080)+' '+service['image']
+        command = "sudo docker run -d"+' -p '+str(port)+':'+str(8080)+' '+service['image']
         command += ' ' + str(port) + ' ' + getAddr(vmID, path='send') # argv passed to container: [container_port] [router_address]
         subprocess.run(command.split(), stdout=subprocess.PIPE)
         return '200 OK'
@@ -85,7 +98,7 @@ def send_message(container, workflow, data):
         if next_vm != vmID:
             # If next-hop from origin is on another vm
             x = threading.Thread(target=send_message_repeat, 
-            args=(getAddr(next_vm, 'send'),{'FROM_CONTAINER':container,'WFID':workflow,'DATA':data}))
+            args=(getAddr(next_vm, ROUTING_PORT , 'send'),{'FROM_CONTAINER':container,'WFID':workflow,'DATA':data}))
             threads.append(x)
             x.start()
         else:
@@ -96,6 +109,8 @@ def send_message(container, workflow, data):
             x.start()
     for t in threads:
         t.join()
+        
+    #print("Workflow ran successfully for Workflow Id:{} !!".format(str(workflow)))    
     return
 
 # Container data routing.

@@ -28,6 +28,17 @@ net = {
 	"M2": "csa-6343-103.utdallas.edu",
 }
 
+
+#net = {
+#	"Manager": "M1",
+#	"Routing Port": 6060,
+#	"WFM Port": 5000,
+#	"M1": "csa-6343-93.utdallas.edu",
+#	"M2": "csa-6343-103.utdallas.edu",
+#	"M3": "10.176.67.248",
+#	"M6": "10.176.67.245"
+#}
+
 def main():
     global net, vm, ip_table, workflows, capacity, ports
 
@@ -89,6 +100,7 @@ def table_update(id, routing_table):
 def deploy_service(id, service):
     while True:
         r = requests.post(getAddr(id, 'deploy'), json=service)
+        print(r)
         if r.status_code == 200 and r.text == '200 OK':
             break
         time.sleep(10)
@@ -104,7 +116,8 @@ def define_deployment(workflow_dict):
     while id in workflows:
         id = random.randint(100000, 999999)
     workflow_dict["id"] = id
-
+    print("Workflow id: {} ".format(id))
+    
     # Select machine for each component. Each new container on a machine increases capacity by 1.
     for service in workflow_dict["components"]:
         # Generate service/container ID
