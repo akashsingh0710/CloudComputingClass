@@ -78,7 +78,7 @@ def router_init(id, ip_table):
 def table_update(id, routing_table):
     while True:
         r = requests.post(getAddr(id, 'control'), 
-        json={'TYPE':'ROUTING', 'ROUTINGTABLE':routing_table})
+        json={"TYPE":"ROUTING", "ROUTINGTABLE":routing_table})
         if r.status_code == 200 and r.text == '200 OK':
             break
         time.sleep(10)
@@ -92,7 +92,7 @@ def deploy_service(id, service):
         if r.status_code == 200 and r.text == '200 OK':
             break
         time.sleep(10)
-    print('Router on %s updated routing info.' % id)
+    print('Router on %s deployed %s.' % (id, service["cid"]))
     return
 
 # Generates deployment dict for workflow
@@ -150,14 +150,15 @@ def deploy(workflow_dict):
     # Build routing table
     for i, dest in enumerate(wf['adjacency']):
         iid = wf['components'][i]['cid']
-        key = (iid, wf['id'])
+        key = iid + str(wf['id'])
         if len(dest) == 0:
             continue
         for d in dest:
             if key not in routing_table:
-                routing_table[key] = set()
+                routing_table[key] = list()
             dobj = wf['components'][d]
-            routing_table[key].add((dobj['machine'], dobj['cid']))
+            routing_table[key].append((dobj['machine'], dobj['cid']))
+    print(vm)
         
     # Distribute routing info
     threads = []
@@ -181,9 +182,9 @@ def deploy(workflow_dict):
 # Client interface
 @app.route('/workflow', methods=['POST'])
 def workflow():
-    global init_done
-    if not init_done:
-        return
+    #global init_done
+    #if not init_done:
+    #    return
 
     if request.method == 'POST':
         deploy(request.json)

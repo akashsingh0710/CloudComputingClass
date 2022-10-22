@@ -78,7 +78,7 @@ def send_message_repeat(addr, content):
 def send_message(container, workflow, data):
     global container_table, routing_table
     # Get next-hop containers
-    next_hops = routing_table[(container, workflow)]
+    next_hops = routing_table[container + str(workflow)]
     # POST to all next-hops
     threads = []
     for next_vm, next_container in next_hops:
