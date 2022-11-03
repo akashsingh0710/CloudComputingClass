@@ -4,6 +4,8 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 import pickle
+import requests
+import sys
 
 app = Flask(__name__)
 
@@ -20,25 +22,37 @@ def getTrainTestData(df):
     count_vec = CountVectorizer(ngram_range=(1,2))
     X_train = count_vec.fit_transform(x_train)
     X_test = count_vec.transform(x_test)
-    return [X_train,X_test,y_train,y_test,count_vec, le]
+    return  [X_train,X_test,y_train,y_test,count_vec, le]
 
 
 
-@app.route('/countvec', methods=['POST'])
+@app.route('/datasink', methods=['POST'])
 def createVec():
-    jsonData = json.loads(request.data)
+    jsonData = json.loads(request.json["DATA"])
     global ngramDF 
     ngramDF = pd.DataFrame(jsonData)
+    mat = getTrainTestData(ngramDF) 
+    with open('trainingData.pickle', 'wb') as f:
+        pickle.dump(mat, f)
+    data = pickle.dumps(mat)
+    dictionary = {}
+    dictionary["DATA"] = str(data)
+    dictionary["WFID"] = request.json["WFID"]
+    dictionary["PORT"] = sys.argv[1]
+    address = sys.argv[2]
+    requests.post(address, json=dictionary)
+    print("container count vectorizer complete")
+    
     return "200 OK"
 
 
-@app.route('/countvec', methods=['GET'])
-def getTrainingData():
-    mat = getTrainTestData(ngramDF) 
-    data = pickle.dumps(mat)
-    with open('trainingData.pickle', 'wb') as f:
-        pickle.dump(mat, f)
-    return data
+# @app.route('/countvec', methods=['GET'])
+# def getTrainingData():
+#     # mat = getTrainTestData(ngramDF) 
+#     # data = pickle.dumps(mat)
+#     # with open('trainingData.pickle', 'wb') as f:
+#     #     pickle.dump(mat, f)
+#     # return data
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=6005)
+    app.run(host='0.0.0.0', port=8080)

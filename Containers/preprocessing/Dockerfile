@@ -12,9 +12,10 @@ RUN apt-get -y install apt-utils \
     python3-pip \
     python3-numpy \
     python3-pandas
+
 ADD requirements.txt .
 RUN pip3 install -r requirements.txt
 ENV FLASK_ENV=development
-EXPOSE 6005
-COPY countVec.py /app/countVec.py
-CMD [ "python3", "./countVec.py"]
+COPY preprocessing.py /app/preprocessing.py
+COPY /data /app/data
+ENTRYPOINT [ "python3", "./preprocessing.py"]
