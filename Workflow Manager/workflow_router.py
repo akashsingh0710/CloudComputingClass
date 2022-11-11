@@ -15,11 +15,11 @@ routing_table = {} # (containerID, workflow):set((nextVMID, nextContainerID)) //
 
 # Container Table reverse lookup
 def get_container(port):
-  
     print("port in get_cotainer: ", port)
     print("port type in get_cotainer: ", type(port))
     print(container_table)
-
+    print(container_table)
+        
     for c in container_table.keys():
         if container_table[c] == int(port):
             return c
@@ -111,6 +111,7 @@ def send_message(container, workflow, data):
         t.join()
         
     #print("Workflow ran successfully for Workflow Id:{} !!".format(str(workflow)))    
+        
     return
 
 # Container data routing.
