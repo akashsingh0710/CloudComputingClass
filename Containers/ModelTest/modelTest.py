@@ -3,7 +3,6 @@ from flask import Flask, request, json
 from sklearn.preprocessing import LabelEncoder
 import pickle
 import logging
-from sklearn.svm import SVC
 app = Flask(__name__)
 import requests
 import nltk
@@ -16,7 +15,6 @@ import ast
 
 import unicodedata
 
-model = SVC()
 cv = CountVectorizer()
 le = LabelEncoder()
 wfid = ""
