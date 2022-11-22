@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <title>Data sink</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+
+ </head>
+ <body>
+  <nav class="navbar navbar-dark bg-dark">
+    <a class="navbar-brand" href="#">Data Sink</a>
+  </nav>
+ </div>
+<div class="container">
+  <div class="row">
+{% if cons != "" %}
+{% for key, value in cons.items() %}
+
+<div class="col-lg-6 mb-4">
+<div class="card" >
+  <div class="card-body">
+    <h5 class="card-title">Workflow id: {{flow}}</h5>
+
+    <p class="card-text"> {{key}}</p>
+    <a href="#" class="btn btn-primary">{{ value }}</a>
+  </div>
+</div>
+</div>
+
+{% endfor %}
+{% endif %}
+</div>
+</div>
+
+ </body>
+
+ <script type="text/javascript">
+  $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+  setTimeout(function() {
+    location.reload();
+}, 10000);
+
+  </script>
+
+</html>
