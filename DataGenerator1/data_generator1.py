@@ -1,5 +1,5 @@
 import requests
-from flask import Flask, request
+# from flask import request
 import pandas as pd
 import time
 import random
@@ -17,14 +17,10 @@ net = {
 	"M6": "10.176.67.245"
 }
 
-app = Flask(__name__)
-
-
-@app.route('/generate_data', methods=['POST'])
 def generate_data():
 
     print("data generator1 generating data")
-    wf = request.json
+    # wf = request.json
     
     file_no = random.randint(1, 20)
     
@@ -32,36 +28,35 @@ def generate_data():
     opinions = pd.read_csv(file_name)
     opinionsDict = {}
     opinionsDict["DATA"] = opinions.to_json()
-    opinionsDict["WFID"] = wf['id']
+    # opinionsDict["WFID"] = wf['id']
 
-    for item in wf['components']:
-        if item['image'] == 'aditichak/preprocessor-nlp':
-        
-          ip_add = net[item['machine']]
-          port = item['port']
+    
+    for key in net:
+        # if item['image'] == 'aditichak/preprocessor-nlp':
+          ip_add = net[key] 
+          port = 6060
             
-          data_gen1_sv = "http://{}:{}/datasink".format(ip_add, port)
+          router_addr = "http://{}:{}/pass_data_gen1".format(ip_add, port)
         
           print("Try to send to this address: ")
-          print(data_gen1_sv)
+          print(router_addr)
           
-          while True:
-            if request.method == 'POST': 
+          # if request.method == 'POST': 
                 
-              try:
-                r = requests.post( data_gen1_sv, json=opinionsDict)
-                print("status_code: " , r.status_code)
-                if r.status_code == 200 and r.text == '200 OK':
-                
-                  print("sent data {} to {}".format(file_name , data_gen1_sv))
-                
-                  break
-              except Exception as e:
-                print(e)
-                print("No container found to handle the data input. Will retry...")
-                time.sleep(10)
+          try:
+             r = requests.post(router_addr, json=opinionsDict)
+             print("status_code: " , r.status_code)
+             if r.status_code == 200:
+             # and r.text == '200 OK':
+                print("sent data {} to {}".format(file_name , router_addr))
+          except Exception as e:
+             # print(e)
+             print()
+             
+    return       
+    
         
-        
-    return '200 OK'
-
-app.run(host='10.176.67.111', port=5000)
+while True:
+    generate_data()   
+    time.sleep(10)
+     

@@ -33,11 +33,11 @@ net = {
 	"Manager": "M1",
 	"Routing Port": 6060,
 	"WFM Port": 5000,
-  "Data Generator 1": "csa-6343-103.utdallas.edu",
-  "Data Generator 2": "10.176.67.248",
-  "Data Generator Port": 5000,
-	#"M1": "csa-6343-93.utdallas.edu",
-	#"M2": "csa-6343-103.utdallas.edu",
+#   "Data Generator 1": "csa-6343-103.utdallas.edu",
+#   "Data Generator 2": "10.176.67.248",
+#   "Data Generator Port": 5000,
+	"M1": "csa-6343-93.utdallas.edu",
+	"M2": "csa-6343-103.utdallas.edu",
 	"M3": "10.176.67.248",
  	"M4": "10.176.67.247",
 	"M5": "10.176.67.246",
@@ -105,7 +105,7 @@ def table_update(id, routing_table):
 def deploy_service(id, service):
     while True:
         r = requests.post(getAddr(id, 'deploy'), json=service)
-        print(r)
+        print("response from deploy_service:" , r)
         if r.status_code == 200 and r.text == '200 OK':
             break
         time.sleep(10)
@@ -192,29 +192,29 @@ def deploy(workflow_dict):
     # Deploy services 
     for service in wf['components']:
         x = threading.Thread(target=deploy_service, args=(service['machine'],
-        {'image':service['image'],'cid':service['cid'], 'port':service['port']}))
+        {'image':service['image'],'cid':service['cid'], 'port':service['port'] , 'WFID':wf['id'] }))
         threads.append(x)
         x.start()
 
     for t in threads:
         t.join()
         
-    data_gen1_sv = "http://{}:{}/generate_data".format(net["Data Generator 1"],  net["Data Generator Port"])    
+    # data_gen1_sv = "http://{}:{}/generate_data".format(net["Data Generator 1"],  net["Data Generator Port"])    
         
-    while True:
-        r = requests.post( data_gen1_sv, json=wf)
-        if r.status_code == 200:
-            break
-        time.sleep(10)
+    # while True:
+    #     r = requests.post( data_gen1_sv, json=wf)
+    #     if r.status_code == 200:
+    #         break
+    #     time.sleep(10)
         
         
-    data_gen2_sv = "http://{}:{}/generate_data".format(net["Data Generator 2"],  net["Data Generator Port"])    
+    # data_gen2_sv = "http://{}:{}/generate_data".format(net["Data Generator 2"],  net["Data Generator Port"])    
         
-    while True:
-        r = requests.post( data_gen2_sv, json=wf)
-        if r.status_code == 200:
-            break
-        time.sleep(10)    
+    # while True:
+    #     r = requests.post( data_gen2_sv, json=wf)
+    #     if r.status_code == 200:
+    #         break
+    #     time.sleep(10)    
         
             
 

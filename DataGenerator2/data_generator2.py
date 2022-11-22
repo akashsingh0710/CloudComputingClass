@@ -18,14 +18,10 @@ net = {
 	"M6": "10.176.67.245"
 }
 
-app = Flask(__name__)
-
-
-@app.route('/generate_data', methods=['POST'])
 def generate_data():
 
     print("data generator2 generating data")
-    wf = request.json
+    # wf = request.json
     
     file_no = random.randint(1, 116)
     
@@ -38,41 +34,43 @@ def generate_data():
     #print(type(Testopinions))
     TestDict = {}
     TestDict["DATA"] = Testopinions['Data']
-    TestDict["WFID"] = wf['id']
+    # TestDict["WFID"] = wf['id']
 
-    for item in wf['components']:
-        if item['image'] == 'aditichak/modeltest':
-        
-          ip_add = net[item['machine']]
-          port = item['port']
+    # print("net: " , net)
+    
+    for key in net:
+        # if item['image'] == 'aditichak/modeltest':
+          # print("key: " , key)      
+          ip_add = net[key] 
+          port = 6060
             
-          data_gen2_sv = "http://{}:{}/testdata".format(ip_add, port)
+          data_gen2_sv = "http://{}:{}/pass_data_gen2".format(ip_add, port)
         
-          print("Try to send to this address: ")
-          print(data_gen2_sv)
+          print("Try to send to this address: " , data_gen2_sv)
+          # print(data_gen2_sv)
           
-          while True:
-            if request.method == 'POST': 
-              
-              time.sleep(30)  
-              
-              try:
-                print("TestDict is: ")
-                print(TestDict)
-                r = requests.post( data_gen2_sv, json=TestDict)
-                print(r.json())
-                print("status_code: " , r.status_code)
-                #if r.status_code == 200 and r.text == '200 OK':
-                if r.status_code == 200: 
-                #and r.text == '200 OK':
-                  print("sent data {} to {}".format(file_name , data_gen2_sv))
-                  break
-              except Exception as e:
-                print(e)
-                print("No container found to handle the data input. Will retry...")
-                time.sleep(10)
+          # while True:
+          
+          try:
+          # print("TestDict is: ")
+          # print(TestDict)
+              r = requests.post( data_gen2_sv, json=TestDict)
+              # print(r.json())
+              print("status_code: " , r.status_code)
+              #if r.status_code == 200 and r.text == '200 OK':
+              if r.status_code == 200: 
+              #and r.text == '200 OK':
+                print("sent data {} to {}".format(file_name , data_gen2_sv))
+          except Exception as e:
+               a=1
+          # print(e)
+          # print("")
+          # time.sleep(10)
         
-        
-    return '200 OK'
+    return        
 
-app.run(host='10.176.67.248', port=5000)
+    
+        
+while True:
+    generate_data()    
+    time.sleep(10)
