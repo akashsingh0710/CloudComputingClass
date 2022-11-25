@@ -5,7 +5,7 @@ import nltk
 import re
 from nltk.corpus import stopwords
 import unicodedata
-from flask import Flask, request
+from flask import Flask, request, json
 import requests
 
 app = Flask(__name__)
@@ -29,7 +29,7 @@ def clean_data(w):
 
 @app.route('/datasink', methods=['POST'])
 def preprocess():
-    opinions = pd.read_csv("./data/deceptive-opinion.csv")
+    opinions = json.loads(request.json["DATA"])
     opinions['text'] = opinions['text'].apply(clean_data)
     opinionsDict = {}
     opinionsDict["WFID"] = request.json["WFID"]
