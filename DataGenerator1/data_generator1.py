@@ -5,12 +5,8 @@ import time
 import random
 
 net = {
-	#"Manager": "M1",
-	#"Routing Port": 6060,
-	#"WFM Port": 5000,
-  #"Data Generator 1": "csa-6343-103.utdallas.edu",
-	"M1": "csa-6343-93.utdallas.edu",
-	"M2": "csa-6343-103.utdallas.edu",
+	"M1": "10.176.67.108",
+	"M2": "10.176.67.111",
 	"M3": "10.176.67.248",
  	"M4": "10.176.67.247",
 	"M5": "10.176.67.246",
@@ -35,7 +31,6 @@ def generate_data():
         # if item['image'] == 'aditichak/preprocessor-nlp':
           ip_add = net[key] 
           port = 6060
-            
           router_addr = "http://{}:{}/pass_data_gen1".format(ip_add, port)
         
           print("Try to send to this address: ")

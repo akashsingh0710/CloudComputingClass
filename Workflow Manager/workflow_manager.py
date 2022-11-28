@@ -33,16 +33,20 @@ net = {
 	"Manager": "M1",
 	"Routing Port": 6060,
 	"WFM Port": 5000,
-#   "Data Generator 1": "csa-6343-103.utdallas.edu",
-#   "Data Generator 2": "10.176.67.248",
-#   "Data Generator Port": 5000,
-	"M1": "csa-6343-93.utdallas.edu",
-	"M2": "csa-6343-103.utdallas.edu",
+	"M1": "10.176.67.108",
+	"M2": "10.176.67.111",
 	"M3": "10.176.67.248",
  	"M4": "10.176.67.247",
 	"M5": "10.176.67.246",
 	"M6": "10.176.67.245"
 }
+
+#M1:UVM1
+#M2:UVM2
+#M3:PVM1
+#M3:PVM2
+#M3:PVM3
+#M3:PVM4
 
 def main():
     global net, vm, ip_table, workflows, capacity, ports
@@ -116,10 +120,20 @@ def deploy_service(id, service):
 def define_deployment(workflow_dict):
     global vm, ip_table, workflows, capacity, ports, containers
 
+
     # Generate workflow ID.
-    id = random.randint(100000, 999999)
-    while id in workflows:
-        id = random.randint(100000, 999999)
+    max_wfid = 100000
+    for key in workflows.keys():
+       if(key> max_wfid):
+           max_wfid = key
+           
+    id=max_wfid+1
+
+
+    # Generate workflow ID.
+    #id = random.randint(100000, 999999)
+    #while id in workflows:
+    #    id = random.randint(100000, 999999)
     workflow_dict["id"] = id
     print("Workflow id: {} ".format(id))
     
