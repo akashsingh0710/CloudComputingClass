@@ -3,7 +3,6 @@ from flask import Flask, request, json
 from sklearn.preprocessing import LabelEncoder
 import pickle
 import logging
-from sklearn.svm import SVC
 app = Flask(__name__)
 import requests
 import nltk
@@ -16,9 +15,11 @@ import ast
 
 import unicodedata
 
-model = SVC()
 cv = CountVectorizer()
 le = LabelEncoder()
+wfid = ""
+hasModel = []
+
 
 def unicode_to_ascii(s):
     return ''.join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn')
@@ -35,14 +36,7 @@ def clean_data(w):
     clean_words = [word for word in words if (word not in stopwords_list) and len(word) > 2]
     return " ".join(clean_words)
 
-def testing(testData, model, cv):
 
-    clean_test = [clean_data(x) for x in testData]
-    reviews = cv.transform(clean_test)
-    pred = model.predict(reviews)
-    return testData, pred
-
-#     test = []
 testData = ["I stayed for four nights while attending a conference . The hotel is in a great spot - easy walk to Michigan Ave shopping or Rush St. , but just off the busy streets . The room I had was spacious , and very well-appointed . The staff was friendly , and the fitness center , while not huge , was well-equipped and clean . I 've stayed at a number of hotels in Chicago , and this one is my favorite . Internet was n't free , but at $ 10 for 24 hours is cheaper than most business hotels , and it worked very well .",
 "we love the location and proximity to everything . The staff was very friendly and courteous . They were so nice to our 2.5 year old boy . got his backpack full of goodies the moment we arrived . We got free wifi and morning drinks by signing up for select guest program . Ca n't beat that ! the only minor issue is the elevator . we have to take 2 separate elevator trips to get to our room . It got a little annoying when we were going in and out often . Otherwise , it was a great stay !",
 "I wrote an email to the sales & reservation team a week ago ... ... ... i 'm still waiting for a response . All I wanted to do was book a suite for 2 nights but they failed to even reply with an offer . We have now booked another hotel who can be bothered to answer emails . Shame you missed out , coz we tip like rockerfellers ! !",
@@ -54,45 +48,69 @@ testData = ["I stayed for four nights while attending a conference . The hotel i
 "I was attending a training conference in Chicago and opted to book my own room thru one of the online discount programs rather than stay at the rather sterile and pedestrian hotel where the conference was being held . I booked 4 nights at the Intercontinental and was pleased with the elegance and convenient location ( an easy walk to the conference ) . From the lobby to the rooms , this hotel lives up to it 's storied reputation . ( The indoor pool seems to be imported from the set of a Busby Berkeley movie ! ) And even tho ' I was there for a conference , the hotel 's location on the Mag Mile and a quick jaunt to restaurants and theaters , made for a very pleasant stay at a very affordable price ."]
 
 
+def testing(testData, model, cv):
+
+    clean_test = [clean_data(x) for x in testData]
+    reviews = cv.transform(clean_test)
+    pred = model.predict(reviews)
+    return testData, pred
+
+
+
 @app.route('/datasink', methods=['POST'])
 def createVec():
     data = pickle.loads(ast.literal_eval(request.json["DATA"]))
     global model
     global cv
     global le
+    global wfid
     model = data[0]
     cv = data[1]
 
     le = data[2]
-
+    hasModel.append(True)
     test, pred = testing(testData, model, cv)
     prediction = le.inverse_transform(pred)
-
+    wfid = request.json["WFID"]
     dictionary = {}
     dictionary["WFID"] = request.json["WFID"]
     dictionary["PORT"] = sys.argv[1]
     dictionary["DATA"] = dict(zip(test, prediction))
     address = sys.argv[2]
+    
     requests.post(address, json=dictionary)
     logging.basicConfig(level=logging.DEBUG)
-    logging.debug(dictionary)
+    logging.debug("yes we got the model")
+    logging.debug(hasModel)
     with open('data.json', 'w') as f:
         json.dump(dictionary, f)
 
     return "200 OK"
 
 
-@app.route('/datasink', methods=['GET'])
-def getGram():
+@app.route('/testdata', methods=['POST'])
+def testingData():
 
-    testData = request.args["test"]
-    test, pred = testing([testData], model, cv)
-    prediction = le.inverse_transform(pred)
-        
-    dictionary = dict(zip(test, prediction))
-    return json.dumps(dictionary)
-
+    logging.basicConfig(level=logging.DEBUG)
+    logging.debug("before the if is called")
+    logging.debug(hasModel)
     
+    if hasModel and hasModel[0] == True:
+        data = request.json["DATA"]
+
+        test, pred = testing([data], model, cv)
+        prediction = le.inverse_transform(pred)
+        dictionary = {}
+        dictionary["WFID"] = request.json["WFID"]
+        dictionary["DATA"] = dict(zip(test, prediction))
+        address = "http://10.176.67.247:9090/output"
+        requests.post(address, json=dictionary)
+        logging.debug(dictionary)
+        print(dictionary)
+        hasModel[0] = False
+        return "200 OK"
+    return "NOTOK"
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8080)

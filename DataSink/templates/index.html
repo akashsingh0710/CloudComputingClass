@@ -15,20 +15,20 @@
  </div>
 <div class="container">
   <div class="row">
-{% if cons != "" %}
-{% for key, value in cons.items() %}
-
+{% if testData %}
+{% for value in testData %}
+{% for key, val in value[1].items() %}
 <div class="col-lg-6 mb-4">
 <div class="card" >
   <div class="card-body">
-    <h5 class="card-title">Workflow id: {{flow}}</h5>
-
+    <h5 class="card-title">Workflow id: {{ value[0] }}</h5>
     <p class="card-text"> {{key}}</p>
-    <a href="#" class="btn btn-primary">{{ value }}</a>
+    <a href="#" class="btn btn-primary">{{ val }}</a>
+    
   </div>
 </div>
 </div>
-
+{% endfor %}
 {% endfor %}
 {% endif %}
 </div>
