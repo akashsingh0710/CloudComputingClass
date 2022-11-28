@@ -247,6 +247,11 @@ def workflow():
         return 'Deploying:\n' + json.dumps(request.json)
     return
 
+@app.route('kill', methods=['POST'])
+def kill_workflow():
+    print(request.json)
+    return "200 OK"
+
 if __name__ == '__main__':
     main()
     app.run(host='0.0.0.0', port=net['WFM Port'])
