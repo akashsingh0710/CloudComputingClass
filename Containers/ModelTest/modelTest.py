@@ -80,7 +80,8 @@ def createVec():
     
     requests.post(address, json=dictionary)
     logging.basicConfig(level=logging.DEBUG)
-    logging.debug("yes we got the model", hasModel)
+    logging.debug("yes we got the model")
+    logging.debug(hasModel)
     with open('data.json', 'w') as f:
         json.dump(dictionary, f)
 

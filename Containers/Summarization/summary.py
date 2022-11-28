@@ -3,7 +3,7 @@ import pandas as pd
 import pickle
 import requests
 import sys
-
+import logging
 
 app = Flask(__name__)
 
@@ -41,6 +41,9 @@ def countFreq():
     dictionary["PORT"] = sys.argv[1]
     address = sys.argv[2]
     requests.post(address, json=dictionary)
+    logging.basicConfig(level=logging.DEBUG)
+    logging.debug("before the if is called")
+    logging.debug(dictionary)
     print("container summary complete")
     
     return "200 OK"

@@ -2,6 +2,7 @@ from flask import Flask, request
 import pickle
 import requests
 import ast
+import logging
 from nltk.probability import FreqDist
 
 app = Flask(__name__)
@@ -23,7 +24,10 @@ def createVec():
     dictionary = {}
     dictionary["WFID"] = request.json["WFID"]
     dictionary["DATA"] = [fig1, fig2]
-    address = "http://10.176.67.247:9090/output"
+    address = "http://10.176.67.247:9090/cloud"
+    logging.basicConfig(level=logging.DEBUG)
+    logging.debug("before the if is called")
+    logging.debug(dictionary)
     # address = "http://localhost:9090/cloud"
     requests.post(address, json=dictionary)
 

@@ -9,12 +9,11 @@ RUN apt-get -y install apt-utils \
     python3 \
     gcc \
     python3-dev \
-    python3-pip \
-    python3-numpy \
-    python3-pandas
+    python3-pip
 
 ADD requirements.txt .
 RUN pip3 install -r requirements.txt
 ENV FLASK_ENV=development
-COPY summary.py /app/summary.py
-ENTRYPOINT [ "python3", "./summary.py"]
+COPY datasink.py /app/datasink.py
+COPY /templates /app/templates
+ENTRYPOINT [ "python3", "./datasink.py"]

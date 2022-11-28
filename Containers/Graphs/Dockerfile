@@ -9,7 +9,9 @@ RUN apt-get -y install apt-utils \
     python3 \
     gcc \
     python3-dev \
-    python3-pip
+    python3-pip \
+    python3-numpy \
+    python3-pandas
 
 ADD requirements.txt .
 RUN pip3 install -r requirements.txt
