@@ -3,6 +3,7 @@ import sys
 import pandas as pd
 import nltk
 import re
+import logging
 from nltk.corpus import stopwords
 import unicodedata
 from flask import Flask, request, json
@@ -29,16 +30,29 @@ def clean_data(w):
 
 @app.route('/datasink', methods=['POST'])
 def preprocess():
-    opinions = json.loads(request.json["DATA"])
-    opinions['text'] = opinions['text'].apply(clean_data)
-    opinionsDict = {}
-    opinionsDict["WFID"] = request.json["WFID"]
-    opinionsDict["PORT"] = sys.argv[1]
-    address = sys.argv[2]
-    opinionsDict["DATA"] = opinions.to_json()
-    requests.post(address, json=opinionsDict)
-    print("container preprocessing complete")
-    return "200 OK"
+    logging.basicConfig(level=logging.DEBUG)
+    if int(sys.argv[1]) == int(request.json["PORT"]) and str(sys.argv[3]) == str(request.json["WFID"]):
+        opinions = pd.DataFrame(json.loads(request.json["DATA"]))
+        opinions['text'] = opinions['text'].apply(clean_data)
+        opinionsDict = {}
+        opinionsDict["WFID"] = request.json["WFID"]
+        logging.debug("WFID")
+        logging.debug(request.json["WFID"])
+        opinionsDict["PORT"] = sys.argv[1]
+        logging.debug("PORT")
+        logging.debug(str(sys.argv[1]))
+        logging.debug(request.json["PORT"])
+        logging.debug("REQUEST")
+        logging.debug(request)
+        address = sys.argv[2]
+        opinionsDict["DATA"] = opinions.to_json()
+        requests.post(address, json=opinionsDict)
+        logging.debug("container preprocessing complete")
+
+        return "200 OK"
+    else:
+        logging.debug("not the right port")
+        return "200 NOTOK"
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8080)

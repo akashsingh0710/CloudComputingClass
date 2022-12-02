@@ -10,6 +10,7 @@ from flask import Flask, render_template, request, redirect, url_for
 app = Flask(__name__)
 
 matplotlib.pyplot.switch_backend('Agg') 
+logging.basicConfig(level=logging.DEBUG)
 
 
 testData = []
@@ -20,8 +21,8 @@ plot_url_true = ""
 plot_url_false = ""
 testFreq = []
 net = {
-    "M1": "csa-6343-93.utdallas.edu",
-	"M2": "csa-6343-103.utdallas.edu",
+    "M1": "10.176.67.108",
+	"M2": "10.176.67.111",
 	"M3": "10.176.67.248",
 	"M4": "10.176.67.247",
 	"M5": "10.176.67.246",
@@ -70,12 +71,14 @@ def createCloud():
         try:
             addr = "http://{}:{}/terminate_workflow".format(address, port)
             r = requests.post(addr, json=dictionary)
-            print("status_code data sink: " , r.status_code)
+            logging.debug("status_code data sink: " )
+            logging.debug(r.status_code)
               #if r.status_code == 200 and r.text == '200 OK':
             if r.status_code == 200: 
-                print("sent terminate workflow")
+                logging.debug("sent terminate workflow")
         except Exception as e:
-            print("exception!!", address)
+            logging.debug("exception!!")
+            logging.debug(address)
 
     testFreq.append((wfid, plot_url_true, plot_url_false))
     return redirect(url_for('cloud'))
@@ -95,12 +98,14 @@ def create():
         try:
             addr = "http://{}:{}/terminate_workflow".format(address, port)
             r = requests.post(addr, json=dictionary)
-            print("status_code data sink: " , r.status_code)
+            logging.debug("status_code data sink: " )
+            logging.debug(r.status_code)
               #if r.status_code == 200 and r.text == '200 OK':
             if r.status_code == 200: 
-                print("sent terminate workflow")
+                logging.debug("sent terminate workflow")
         except Exception as e:
-            print("exception!!", address)
+            logging.debug("exception!!")
+            logging.debug(address)
 
     return redirect(url_for('index'))
 

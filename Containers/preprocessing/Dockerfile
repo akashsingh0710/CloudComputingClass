@@ -17,5 +17,4 @@ ADD requirements.txt .
 RUN pip3 install -r requirements.txt
 ENV FLASK_ENV=development
 COPY preprocessing.py /app/preprocessing.py
-COPY /data /app/data
 ENTRYPOINT [ "python3", "./preprocessing.py"]
