@@ -19,7 +19,7 @@ cv = CountVectorizer()
 le = LabelEncoder()
 wfid = ""
 hasModel = []
-
+port = ""
 
 def unicode_to_ascii(s):
     return ''.join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn')
@@ -64,9 +64,11 @@ def createVec():
     global cv
     global le
     global wfid
+    global port 
+
     model = data[0]
     cv = data[1]
-
+    port = sys.argv[1]
     le = data[2]
     hasModel.append(True)
     test, pred = testing(testData, model, cv)
@@ -94,10 +96,11 @@ def testingData():
     logging.basicConfig(level=logging.DEBUG)
     logging.debug("before the if is called")
     logging.debug(hasModel)
+    logging.debug("the port")
+    logging.debug(port)
     
-    if hasModel and hasModel[0] == True:
+    if hasModel and hasModel[0] == True and port and int(port) == request.json["PORT"] and str(sys.argv[3]) == str(request.json["WFID"]):
         data = request.json["DATA"]
-
         test, pred = testing([data], model, cv)
         prediction = le.inverse_transform(pred)
         dictionary = {}
