@@ -1,9 +1,9 @@
 {
     "components": [
-      {"image": "aditichak/preprocessor-nlp"},
+      {"image": "aditichak/initial-process"},
       {"image": "aditichak/training"},
       {"image": "aditichak/lr"},
-      {"image": "aditichak/modeltest"}
+      {"image": "aditichak/prediction"}
     ],
     "adjacency": [
       [1],
