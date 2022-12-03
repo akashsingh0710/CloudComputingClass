@@ -71,12 +71,16 @@ def deploy_container():
         
         port = service["port"]
         WFID = service["WFID"]
+        persist = service["persist"]
         container_table[service['cid']] = port
-        command = "sudo docker run -d"+' -p '+str(port)+':'+str(8080)+' '+service['image']
-        command += ' ' + str(port) + ' ' + getAddr(vmID, path='send') + ' ' + str(WFID) # argv passed to container: [container_port] [router_address]
-        result = subprocess.run(command.split(), stdout=subprocess.PIPE)
+
+        if (persist == False):
+            command = "sudo docker run -d"+' -p '+str(port)+':'+str(8080)+' '+service['image']
+            command += ' ' + str(port) + ' ' + getAddr(vmID, path='send') + ' ' + str(WFID) # argv passed to container: [container_port] [router_address]
+            result = subprocess.run(command.split(), stdout=subprocess.PIPE)
+            print("container ID deployed: " , result)
         
-        print("container ID deployed: " , result)
+        
         
         active_containers[service['cid']] = (service['image'] , service['port'], service["WFID"])
         

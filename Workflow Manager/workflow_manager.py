@@ -7,6 +7,7 @@ import threading
 import time
 
 # Globals
+PERSISTENT_THRESHOLD = 2
 with open('./network_config.json', 'r') as f:
     net = json.load(f)
 vm = [] # List of machines in network config
@@ -14,6 +15,7 @@ ip_table = {} # Machine:ip. Subset of net, but mutable, so use instead of net.
 routing_table = {}  # (Container ID, Workflow ID):set((nextMachineID, nextContainerID)). 
                     # One container can have to multiple next-hops. Push to routers when updated.
 workflows = {} # Workflow ID:Workflow JSON dict
+persistent_containers = {} #Keeps track of the containers marked for persistency {image:{cid:cid, machine:machine, port:port, count:0}, image:{...}}
 containers = set() # Set of used container IDs
 capacity = {} # Machine:int(used space) (i.e. number of deployed services)
 ports = {} # Machine:set(used ports)
@@ -139,33 +141,61 @@ def define_deployment(workflow_dict):
     
     # Select machine for each component. Each new container on a machine increases capacity by 1.
     for service in workflow_dict["components"]:
-        # Generate service/container ID
-        cid = 'C' + str(random.randint(100000,999999))
-        while id in containers:
-            cid = 'C' + str(random.randint(100000, 999999))
-        containers.add(cid)
-        service['cid'] = cid
+        
+        #This portion of code will check to see if the image is already deployed.
+        is_persistent = False
+        image_exists = False
+        for x in persistent_containers:
+            if (service["image"] == x):
+                if (persistent_containers[x]["count"] >= PERSISTENT_THRESHOLD):
+                    service["cid"] = persistent_containers[x]["cid"]
+                    service["machine"] = persistent_containers[x]["machine"]
+                    service["port"] = persistent_containers[x]["port"]
+                    service["persist"] = True
+                    is_persistent = True
+                persistent_containers[x]["count"] += 1
+                image_exists = True
 
-        temp = capacity[min(capacity, key=capacity.get)]
-        for machine in capacity.keys():
-            if capacity[machine] == temp:
-                # Select first machine with min capacity
-                capacity[machine] += 1
-                service["machine"] = machine
 
-                # Select port that is not currently opened.
-                port = random.randint(5001, 6000)
-                # If collision occurs, increment until open port found if port space isn't full yet.
-                # (Optimization for random selection when ports are densely populated)
-                while port in ports[machine] and len(ports[machine]) < 1000:
-                    port += 1
-                    port = (port-5001)%1000 + 5001
-                service["port"] = port
-                ports[machine].add(port)
-                break      
+        #Generate new container
+        if (is_persistent == False):
+            # Generate service/container ID
+            cid = 'C' + str(random.randint(100000,999999))
+            while id in containers:
+                cid = 'C' + str(random.randint(100000, 999999))
+            containers.add(cid)
+            service['cid'] = cid
 
-    # Store workflow info
+            temp = capacity[min(capacity, key=capacity.get)]
+            for machine in capacity.keys():
+                if capacity[machine] == temp:
+                    # Select first machine with min capacity
+                    capacity[machine] += 1
+                    service["machine"] = machine
+
+                    # Select port that is not currently opened.
+                    port = random.randint(5001, 6000)
+                    # If collision occurs, increment until open port found if port space isn't full yet.
+                    # (Optimization for random selection when ports are densely populated)
+                    while port in ports[machine] and len(ports[machine]) < 1000:
+                        port += 1
+                        port = (port-5001)%1000 + 5001
+                    service["port"] = port
+                    ports[machine].add(port)
+                    break    
+            
+            #Mark the service to not persist
+            service["persist"] = False
+            
+            #Adds container to be persistent.
+            if (image_exists == False):
+                persistent_containers.update({service["image"]:{"cid":service["cid"], "machine":service["machine"], "port":service["port"], "count":0}})
+
+    # Store workflow info    
     workflows[id] = workflow_dict
+    
+    print("THIS IS THE PERSISTENCE LIST")
+    print(persistent_containers)
     
     # Print data structures if flask debug mode is on.
     if app.debug == True:
@@ -205,8 +235,9 @@ def deploy(workflow_dict):
 
     # Deploy services 
     for service in wf['components']:
+        print(wf)
         x = threading.Thread(target=deploy_service, args=(service['machine'],
-        {'image':service['image'],'cid':service['cid'], 'port':service['port'] , 'WFID':wf['id'] }))
+        {'image':service['image'],'cid':service['cid'], 'port':service['port'] , 'WFID':wf['id'], 'persist':service['persist'] }))
         threads.append(x)
         x.start()
 
