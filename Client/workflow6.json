@@ -1,14 +1,10 @@
 {
     "components": [
       {"image": "aditichak/initial-process"},
-      {"image": "aditichak/training"},
-      {"image": "aditichak/naivebayes"},
-      {"image": "aditichak/modeltest"}
+      {"image": "aditichak/hello"}
     ],
     "adjacency": [
       [1],
-      [2],
-      [3],
       []
     ]
 }
