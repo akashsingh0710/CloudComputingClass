@@ -1,6 +1,6 @@
 {
     "components": [
-      {"image": "aditichak/initial-process"},
+      {"image": "aditichak/preprocessor-nlp"},
       {"image": "aditichak/training"},
       {"image": "aditichak/lr"},
       {"image": "aditichak/modeltest"}
