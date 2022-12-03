@@ -3,6 +3,7 @@ import threading
 import time
 import requests
 import subprocess
+import psutil
 
 ROUTING_PORT = 6060
 
@@ -12,6 +13,7 @@ managerID = None # Dataflow manager's ID. Received in INIT control message.
 ip_table = {} # vm:ip_string // UPDATED BY DATAFLOW MANAGER.
 container_table = {} # containerID:port // UPDATED LOCALLY. ONLY STORES LOCAL CONTAINERS.
 routing_table = {} # (containerID, workflow):set((nextVMID, nextContainerID)) // UPDATED BY DATAFLOW MANAGER.
+cpu_idle = []
 
 data1_recipients = [] # (containerID, WFID)
 data2_recipients = []
@@ -22,6 +24,21 @@ DATA2_IMG = ['aditichak/modeltest']
 #active_WFID_for_data_gen1 = []  
 #active_WFID_for_data_gen2 = []  
 port_opened = []
+
+# CPU tracking thread function
+def track_cpu():
+    global cpu_idle
+    while True:
+        if len(cpu_idle) >= 60:
+            cpu_idle.pop(0)
+        cpu_idle.append(100 - psutil.cpu_percent(interval=5))
+        time.sleep(1)
+
+def avg_cpu_idle():
+    global cpu_idle
+    if len(cpu_idle) == 0:
+        return 100 - psutil.cpu_percent(interval=5)
+    return sum(cpu_idle)/len(cpu_idle) 
 
 # Container Table reverse lookup
 def get_container(port):
@@ -164,10 +181,11 @@ def control():
             print('I am a router on %s. My manager is %s.' % (vmID, managerID))
             print('My ip_table is', str(ip_table))
             return vmID
-
         if type == 'ROUTING':
             routing_table = request.json['ROUTINGTABLE']
             return '200 OK'
+        if type == 'CAPACITY':
+            return {'CPU': avg_cpu_idle(), 'MEM': psutil.virtual_memory().available}
 
     return 
 
@@ -341,3 +359,4 @@ subprocess.call('sudo docker rm -f $(sudo docker ps -a -q)', shell=True)
 # subprocess.run(command.split(), stdout=subprocess.PIPE)
 
 app.run(host='0.0.0.0', port=ROUTING_PORT)
+threading.Thread(target=track_cpu, daemon=True).start()
