@@ -211,6 +211,7 @@ def define_deployment(workflow_dict):
                         break
 
             # Select port that is not currently opened.
+            machine = service['machine']
             port = random.randint(5001, 6000)
             # If collision occurs, increment until open port found if port space isn't full yet.
             # (Optimization for random selection when ports are densely populated)
