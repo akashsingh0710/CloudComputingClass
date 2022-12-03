@@ -3,6 +3,7 @@ import threading
 import time
 import requests
 import subprocess
+import psutil
 
 ROUTING_PORT = 6060
 
@@ -12,6 +13,7 @@ managerID = None # Dataflow manager's ID. Received in INIT control message.
 ip_table = {} # vm:ip_string // UPDATED BY DATAFLOW MANAGER.
 container_table = {} # containerID:port // UPDATED LOCALLY. ONLY STORES LOCAL CONTAINERS.
 routing_table = {} # (containerID, workflow):set((nextVMID, nextContainerID)) // UPDATED BY DATAFLOW MANAGER.
+cpu_idle = []
 
 active_containers = {} #(tuple of image_name, port)
 active_WFID_for_data_gen1 = []  
@@ -26,11 +28,25 @@ net = {
 	"M6": "10.176.67.245"
 }
 
+# CPU tracking thread function
+def track_cpu():
+    global cpu_idle
+    while True:
+        if len(cpu_idle) >= 60:
+            cpu_idle.pop(0)
+        cpu_idle.append(100 - psutil.cpu_percent(interval=5))
+        time.sleep(1)
+
+def avg_cpu_idle():
+    global cpu_idle
+    if len(cpu_idle) == 0:
+        return 100 - psutil.cpu_percent(interval=5)
+    return sum(cpu_idle)/len(cpu_idle)
 
 # Container Table reverse lookup
 def get_container(port):
-    print("port in get_cotainer: ", port)
-    # print("port type in get_cotainer: ", type(port))
+    print("port in get_container: ", port)
+    # print("port type in get_container: ", type(port))
     print(container_table)
     # print(container_table)
         
@@ -64,6 +80,7 @@ def getAddr(vm, port=ROUTING_PORT, path = None):
 def deploy_container():
     global active_WFID_for_data_gen1
     global active_WFID_for_data_gen2
+    global cpu_idle
     if request.method == 'POST':
         service = request.json
         
@@ -78,12 +95,10 @@ def deploy_container():
             command = "sudo docker run -d"+' -p '+str(port)+':'+str(8080)+' '+service['image']
             command += ' ' + str(port) + ' ' + getAddr(vmID, path='send') + ' ' + str(WFID) # argv passed to container: [container_port] [router_address]
             result = subprocess.run(command.split(), stdout=subprocess.PIPE)
+            cpu_idle.clear()
             print("container ID deployed: " , result)
         
-        
-        
         active_containers[service['cid']] = (service['image'] , service['port'], service["WFID"])
-        
         
         if WFID not in active_WFID_for_data_gen1:
             active_WFID_for_data_gen1.append(WFID)
@@ -119,6 +134,9 @@ def control():
         if type == 'ROUTING':
             routing_table = request.json['ROUTINGTABLE']
             return '200 OK'
+
+        if type == 'CAPACITY':
+            return {'CPU': avg_cpu_idle(), 'MEM': psutil.virtual_memory().available}
 
     return 
 
@@ -233,7 +251,6 @@ def send():
 
     return
 
-
 @app.route('/pass_data_gen1', methods=['POST'])
 def pass_data_generator1():
     opinionsDict = request.json
@@ -282,9 +299,7 @@ def pass_data_generator1():
                      print(e)
             
     return '200 OK' 
-    
-    
-    
+     
 @app.route('/pass_data_gen2', methods=['POST'])
 def pass_data_generator2():
     
@@ -337,12 +352,9 @@ def pass_data_generator2():
             
     return '200 OK'     
 
-
-
 @app.route('/terminate_workflow', methods=['POST'])
 def terminate_workflow():
-    
-   
+
     wfid = int(request.json['WFID'])
     print("terminate workflow called for: ", wfid)
     print("terminate active_WFID_for_data_gen1 called for: ", active_WFID_for_data_gen1)
@@ -358,7 +370,6 @@ def terminate_workflow():
         print("removing from datagen1_list: " , wfid)
         active_WFID_for_data_gen1.remove(wfid)
         
-     
     d = active_WFID_for_data_gen2.count(wfid)
     print("d: ", d)  
     for j in range(d) :
@@ -369,7 +380,6 @@ def terminate_workflow():
             
     return '200 OK'  
 
-
 # command = "sudo docker stop $(sudo docker ps -a -q)"
 # subprocess.call(command.split())
 # # subprocess.call(command.split(), stdout=subprocess.PIPE)
@@ -377,9 +387,9 @@ def terminate_workflow():
 subprocess.call('sudo docker stop $(sudo docker ps -a -q)', shell=True)
 subprocess.call('sudo docker rm -f $(sudo docker ps -a -q)', shell=True)
 
-
 # command = "sudo docker rm -f $(sudo docker ps -a -q)"
 # subprocess.call(command.split())
 # subprocess.run(command.split(), stdout=subprocess.PIPE)
 
 app.run(host='0.0.0.0', port=ROUTING_PORT)
+threading.Thread(target=track_cpu, daemon=True).start()
