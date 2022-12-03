@@ -8,6 +8,7 @@ import time
 
 # Globals
 PERSISTENT_THRESHOLD = 2
+DEPLOYMENT_SCHEME = 'Worst Fit' # Round Robin, Best Fit, or Worst Fit
 with open('./network_config.json', 'r') as f:
     net = json.load(f)
 vm = [] # List of machines in network config
@@ -118,10 +119,33 @@ def deploy_service(id, service):
     print('Router on %s deployed %s.' % (id, service["cid"]))
     return
 
+# Thread function to get VM capacity from routers
+# Routers return json of the form {'CPU': 60 second avg cpu idle time, 'MEM': memory available}
+def get_capacity(id, return_dict):
+    while True:
+        r = requests.post(getAddr(id, 'control'),
+        json={'TYPE':'CAPACITY'})
+        if r.status_code == 200:
+            return_dict[id] = r.json()
+            break
+        time.sleep(10)
+    return
+
+# Returns dict of form {'vmid': {'CPU','MEM'}}
+def get_vm_capacities():
+    return_dict = {}
+    threads = []
+    for m in vm:
+        t = threading.Thread(target=get_capacity, args=(m, return_dict))
+        threads.append(t)
+        t.start()
+    for t in threads:
+        t.join()
+    return return_dict
+
 # Generates deployment dict for workflow
 def define_deployment(workflow_dict):
     global vm, ip_table, workflows, capacity, ports, containers
-
 
     # Generate workflow ID.
     max_wfid = 100000
@@ -131,7 +155,6 @@ def define_deployment(workflow_dict):
            
     id=max_wfid+1
 
-
     # Generate workflow ID.
     #id = random.randint(100000, 999999)
     #while id in workflows:
@@ -139,6 +162,10 @@ def define_deployment(workflow_dict):
     workflow_dict["id"] = id
     print("Workflow id: {} ".format(id))
     
+    vm_cap = {}
+    #if DEPLOYMENT_SCHEME != 'Round Robin':
+    vm_cap = get_vm_capacities()
+    print(vm_cap)
     # Select machine for each component. Each new container on a machine increases capacity by 1.
     for service in workflow_dict["components"]:
         
@@ -156,7 +183,6 @@ def define_deployment(workflow_dict):
                     is_persistent = True
                 image_exists = True
 
-
         #Generate new container
         if (is_persistent == False):
             # Generate service/container ID
@@ -166,23 +192,46 @@ def define_deployment(workflow_dict):
             containers.add(cid)
             service['cid'] = cid
 
-            temp = capacity[min(capacity, key=capacity.get)]
-            for machine in capacity.keys():
-                if capacity[machine] == temp:
+            MB5 = 5 * 1024 * 1024
+            CPU_VAL = 0.5
+            if DEPLOYMENT_SCHEME == 'Round Robin':
+                temp = capacity[min(capacity, key=capacity.get)]
+                for machine in vm:
+                    if capacity[machine] == temp:
                     # Select first machine with min capacity
-                    capacity[machine] += 1
-                    service["machine"] = machine
+                        capacity[machine] += 1
+                        service["machine"] = machine
+                        break
+            elif DEPLOYMENT_SCHEME == 'Best Fit':
+                sorted_vms = [x for x in vm_cap.keys()]
+                sorted_vms.sort(key=lambda x: vm_cap[x]['CPU'])
+                print(sorted_vms)
+                for machine in sorted_vms:
+                    if vm_cap[machine]['CPU'] > CPU_VAL and vm_cap[machine]['MEM'] > MB5: 
+                        vm_cap[machine]['CPU'] -= CPU_VAL
+                        vm_cap[machine]['MEM'] -= MB5
+                        service['machine'] = machine
+                        break
+            elif DEPLOYMENT_SCHEME == 'Worst Fit':
+                sorted_vms = [x for x in vm_cap.keys()]
+                sorted_vms.sort(reverse=True, key=lambda x: vm_cap[x]['CPU'])
+                print(sorted_vms)
+                for machine in sorted_vms:
+                    if vm_cap[machine]['CPU'] > CPU_VAL  and vm_cap[machine]['MEM'] > MB5:
+                        vm_cap[machine]['CPU'] -= CPU_VAL
+                        vm_cap[machine]['MEM'] -= MB5
+                        service['machine'] = machine
+                        break
 
-                    # Select port that is not currently opened.
-                    port = random.randint(5001, 6000)
-                    # If collision occurs, increment until open port found if port space isn't full yet.
-                    # (Optimization for random selection when ports are densely populated)
-                    while port in ports[machine] and len(ports[machine]) < 1000:
-                        port += 1
-                        port = (port-5001)%1000 + 5001
-                    service["port"] = port
-                    ports[machine].add(port)
-                    break    
+            # Select port that is not currently opened.
+            port = random.randint(5001, 6000)
+            # If collision occurs, increment until open port found if port space isn't full yet.
+            # (Optimization for random selection when ports are densely populated)
+            while port in ports[machine] and len(ports[machine]) < 1000:
+                port += 1
+                port = (port-5001)%1000 + 5001
+            service["port"] = port
+            ports[machine].add(port)  
             
             #Mark the service to not persist
             service["persist"] = False
@@ -211,7 +260,6 @@ def deploy(workflow_dict):
 
     print("Wf after define_deployment: ")
     print(wf)
-    
     
     # Build routing table
     for i, dest in enumerate(wf['adjacency']):
