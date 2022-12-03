@@ -2,13 +2,21 @@
     "components": [
       {"image": "aditichak/initial-process"},
       {"image": "aditichak/training"},
+      {"image": "aditichak/svc"},
+      {"image": "aditichak/lr"},
       {"image": "aditichak/naivebayes"},
+      {"image": "aditichak/modeltest"},
+      {"image": "aditichak/modeltest"},
       {"image": "aditichak/modeltest"}
     ],
     "adjacency": [
       [1],
-      [2],
-      [3],
+      [2,3,4],
+      [5],
+      [6],
+      [7],
+      [],
+      [],
       []
     ]
 }

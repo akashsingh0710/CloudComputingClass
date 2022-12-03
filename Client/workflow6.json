@@ -1,0 +1,10 @@
+{
+    "components": [
+      {"image": "aditichak/initial-process"},
+      {"image": "aditichak/hello"}
+    ],
+    "adjacency": [
+      [1],
+      []
+    ]
+}

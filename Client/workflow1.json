@@ -3,7 +3,7 @@
       {"image": "aditichak/initial-process"},
       {"image": "aditichak/training"},
       {"image": "aditichak/svc"},
-      {"image": "aditichak/prediction"}
+      {"image": "aditichak/modeltest"}
     ],
     "adjacency": [
       [1],
