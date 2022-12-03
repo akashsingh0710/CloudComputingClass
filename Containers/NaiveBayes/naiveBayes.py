@@ -4,6 +4,7 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.metrics import accuracy_score
 import requests
 import sys
+import logging
 import ast
 
 app = Flask(__name__)
@@ -22,6 +23,7 @@ def nb(data):
 
 @app.route('/datasink', methods=['POST'])
 def createMultinomialNB():
+    logging.basicConfig(level=logging.DEBUG)
     data = pickle.loads(ast.literal_eval(request.json["DATA"]))
     global trainingData
     trainingData = data
@@ -35,7 +37,7 @@ def createMultinomialNB():
     dictionary["PORT"] = sys.argv[1]
     address = sys.argv[2]
     requests.post(address, json=dictionary)
-    print("container naive bayes complete")
+    logging.debug("container naive bayes complete")
     return "200 OK"
 
 if __name__ == "__main__":

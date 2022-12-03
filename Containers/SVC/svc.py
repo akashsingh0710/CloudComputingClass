@@ -5,6 +5,7 @@ from sklearn.metrics import accuracy_score
 import requests
 import sys
 import ast
+import logging
 
 app = Flask(__name__)
 trainingData = []
@@ -23,6 +24,7 @@ def svm(data):
 
 @app.route('/datasink', methods=['POST'])
 def createVec():
+    logging.basicConfig(level=logging.DEBUG)
     data = pickle.loads(ast.literal_eval(request.json["DATA"]))
     global trainingData
     trainingData = data
@@ -36,19 +38,8 @@ def createVec():
     dictionary["PORT"] = sys.argv[1]
     address = sys.argv[2]
     requests.post(address, json=dictionary)
-    print("container svc complete")
+    logging.debug("container svc complete")
     return "200 OK"
-
-
-# @app.route('/svc', methods=['GET'])
-# def getGram():
-#     model = svm(trainingData)
-#     data = pickle.dumps(model)
-#     with open('svm.pickle', 'wb') as f:
-#         pickle.dump(model, f)
-#     return data
-
-
 
 
 if __name__ == "__main__":

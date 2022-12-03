@@ -4,6 +4,7 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 import pickle
+import logging
 import requests
 import sys
 
@@ -28,6 +29,7 @@ def getTrainTestData(df):
 
 @app.route('/datasink', methods=['POST'])
 def createVec():
+    logging.basicConfig(level=logging.DEBUG)
     jsonData = json.loads(request.json["DATA"])
     global ngramDF 
     ngramDF = pd.DataFrame(jsonData)
@@ -41,7 +43,7 @@ def createVec():
     dictionary["PORT"] = sys.argv[1]
     address = sys.argv[2]
     requests.post(address, json=dictionary)
-    print("container count vectorizer complete")
+    logging.debug("container training complete")
     
     return "200 OK"
 
