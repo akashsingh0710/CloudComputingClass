@@ -5,10 +5,10 @@
       {"image": "aditichak/svc"},
       {"image": "aditichak/lr"},
       {"image": "aditichak/naivebayes"},
-      {"image": "aditichak/prediction"},
-      {"image": "aditichak/prediction"},
-      {"image": "aditichak/prediction"},
-      {"image": "aditichak/prediction"}
+      {"image": "aditichak/modeltest"},
+      {"image": "aditichak/modeltest"},
+      {"image": "aditichak/modeltest"},
+      {"image": "aditichak/modeltest"}
     ],
     "adjacency": [
       [1],
