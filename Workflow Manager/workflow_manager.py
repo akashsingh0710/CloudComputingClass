@@ -147,13 +147,13 @@ def define_deployment(workflow_dict):
         image_exists = False
         for x in persistent_containers:
             if (service["image"] == x):
-                if (persistent_containers[x]["count"] >= PERSISTENT_THRESHOLD):
+                persistent_containers[x]["count"] += 1
+                if (persistent_containers[x]["count"] >= PERSISTENT_THRESHOLD -1):
                     service["cid"] = persistent_containers[x]["cid"]
                     service["machine"] = persistent_containers[x]["machine"]
                     service["port"] = persistent_containers[x]["port"]
                     service["persist"] = True
                     is_persistent = True
-                persistent_containers[x]["count"] += 1
                 image_exists = True
 
 
