@@ -28,8 +28,7 @@ def generate_data():
     Testopinions = json.load(f)
     #print(Testopinions)
     #print(type(Testopinions))
-    TestDict = {}
-    TestDict["DATA"] = Testopinions['Data']
+    TestDict = Testopinions['Data']
     # TestDict["WFID"] = wf['id']
 
     # print("net: " , net)
@@ -68,5 +67,5 @@ def generate_data():
     
         
 while True:
+    input('Press enter to send data.')
     generate_data()    
-    time.sleep(10)

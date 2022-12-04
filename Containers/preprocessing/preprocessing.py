@@ -41,7 +41,6 @@ def getData():
     return "200 OK"
 
 @app.route('/datasink', methods=['POST'])
-
 def preprocess():
     logging.basicConfig(level=logging.DEBUG)     
     logging.debug("do we have the data?")   

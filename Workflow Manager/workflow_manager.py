@@ -5,6 +5,7 @@ import re
 import requests
 import threading
 import time
+import datetime
 
 # Globals
 PERSISTENT_THRESHOLD = 2
@@ -21,6 +22,7 @@ containers = set() # Set of used container IDs
 capacity = {} # Machine:int(used space) (i.e. number of deployed services)
 ports = {} # Machine:set(used ports)
 app = Flask(__name__)
+WFID_LOCK = threading.Lock()
 
 # Override network config for testing purposes
 #net = {
@@ -130,10 +132,11 @@ def get_vm_capacities():
         t.join()
     return return_dict
 
-# Generates deployment dict for workflow
-def define_deployment(workflow_dict):
-    global vm, ip_table, workflows, capacity, ports, containers
+# Deploy workflow
+def deploy(workflow_dict):
+    global vm, ip_table, workflows, capacity, ports, containers, WFID_LOCK
 
+    WFID_LOCK.acquire(blocking=True,timeout=-1)
     # Generate workflow ID.
     max_wfid = 100000
     for key in workflows.keys():
@@ -147,7 +150,9 @@ def define_deployment(workflow_dict):
     #while id in workflows:
     #    id = random.randint(100000, 999999)
     workflow_dict["id"] = id
-    print("Workflow id: {} ".format(id))
+    now = datetime.datetime.now()
+    now = now.strftime('%Y-%m-%d %H:%M:%S')
+    print("Workflow id: {} {}".format(id, now))
     
     vm_cap = {}
     #if DEPLOYMENT_SCHEME != 'Round Robin':
@@ -225,26 +230,22 @@ def define_deployment(workflow_dict):
             service["persist"] = False
             
             #Adds container to be persistent.
-            if (image_exists == False):
+            if not image_exists:
                 persistent_containers.update({service["image"]:{"cid":service["cid"], "machine":service["machine"], "port":service["port"], "count":0}})
 
     # Store workflow info    
     workflows[id] = workflow_dict
+    WFID_LOCK.release()
     
     print("THIS IS THE PERSISTENCE LIST")
     print(persistent_containers)
+    wf = workflow_dict
     
     # Print data structures if flask debug mode is on.
     if app.debug == True:
         print(workflows.keys)
         print(ports)
         print(json.dumps(workflow_dict, indent=4))
-
-    return workflow_dict
-
-# Deploy workflow
-def deploy(workflow_dict):
-    wf = define_deployment(workflow_dict)
 
     print("Wf after define_deployment: ")
     print(wf)
@@ -254,6 +255,9 @@ def deploy(workflow_dict):
         iid = wf['components'][i]['cid']
         key = iid + str(wf['id'])
         if len(dest) == 0:
+            #if key not in routing_table:
+            #    routing_table[key] = list()
+            #routing_table[key].append((net['Sink'], ""))
             continue
         for d in dest:
             if key not in routing_table:
@@ -261,6 +265,7 @@ def deploy(workflow_dict):
             dobj = wf['components'][d]
             routing_table[key].append((dobj['machine'], dobj['cid']))
     print(vm)
+    print(routing_table)
         
     # Distribute routing info
     threads = []
@@ -271,7 +276,6 @@ def deploy(workflow_dict):
 
     # Deploy services 
     for service in wf['components']:
-        print(wf)
         x = threading.Thread(target=deploy_service, args=(service['machine'],
         {'image':service['image'],'cid':service['cid'], 'port':service['port'] , 'WFID':wf['id'], 'persist':service['persist'] }))
         threads.append(x)
@@ -279,25 +283,6 @@ def deploy(workflow_dict):
 
     for t in threads:
         t.join()
-        
-    # data_gen1_sv = "http://{}:{}/generate_data".format(net["Data Generator 1"],  net["Data Generator Port"])    
-        
-    # while True:
-    #     r = requests.post( data_gen1_sv, json=wf)
-    #     if r.status_code == 200:
-    #         break
-    #     time.sleep(10)
-        
-        
-    # data_gen2_sv = "http://{}:{}/generate_data".format(net["Data Generator 2"],  net["Data Generator Port"])    
-        
-    # while True:
-    #     r = requests.post( data_gen2_sv, json=wf)
-    #     if r.status_code == 200:
-    #         break
-    #     time.sleep(10)    
-        
-            
 
     return
 
@@ -310,7 +295,7 @@ def workflow():
 
     if request.method == 'POST':
         #print(request.json)
-        deploy(request.json)
+        threading.Thread(target=deploy, args=(request.json,),daemon=True).start()
         return 'Deploying:\n' + json.dumps(request.json)
     return
 

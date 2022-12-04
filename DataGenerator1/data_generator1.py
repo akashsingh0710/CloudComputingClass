@@ -22,8 +22,7 @@ def generate_data():
     
     file_name = "./data/deceptive-opinion_{}.csv".format(file_no)
     opinions = pd.read_csv(file_name)
-    opinionsDict = {}
-    opinionsDict["DATA"] = opinions.to_json()
+    opinionsDict = opinions.to_json()
     # opinionsDict["WFID"] = wf['id']
 
     
@@ -52,6 +51,6 @@ def generate_data():
     
         
 while True:
-    generate_data()   
-    time.sleep(10)
+    input('Press enter to send data.')
+    generate_data()
      
