@@ -5,6 +5,7 @@ from sklearn.metrics import accuracy_score
 import requests
 import sys
 import ast
+import logging
 
 app = Flask(__name__)
 trainingData = []
@@ -23,6 +24,7 @@ def lr(data):
 
 @app.route('/datasink', methods=['POST'])
 def createLRModel():
+    logging.basicConfig(level=logging.DEBUG)
     data = pickle.loads(ast.literal_eval(request.json["DATA"]))
     global trainingData
     trainingData = data
@@ -36,7 +38,7 @@ def createLRModel():
     dictionary["PORT"] = sys.argv[1]
     address = sys.argv[2]
     requests.post(address, json=dictionary)
-    print("container logistic regression complete")
+    logging.debug("container logistic regression complete")
     return "200 OK"
 
 if __name__ == "__main__":

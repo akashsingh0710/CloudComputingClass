@@ -13,8 +13,6 @@ app = Flask(__name__)
 nltk.download('stopwords')
 stopwords_list=stopwords.words('english')
 
-hasData = []
-
 def unicode_to_ascii(s):
     return ''.join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn')
  
@@ -30,39 +28,20 @@ def clean_data(w):
     clean_words = [word for word in words if (word not in stopwords_list) and len(word) > 2]
     return " ".join(clean_words)
 
-@app.route('/trainingdata', methods=['POST'])
-def getData():
-    logging.basicConfig(level=logging.DEBUG)
-    global opinions 
-    opinions = pd.DataFrame(json.loads(request.json["DATA"]))
-    hasData.append(True)
-    logging.debug("we have the data!")
-    logging.debug(hasData)
-    return "200 OK"
-
 @app.route('/datasink', methods=['POST'])
 def preprocess():
-    logging.basicConfig(level=logging.DEBUG)     
-    logging.debug("do we have the data?")   
-    logging.debug(hasData)
-    if hasData and hasData[0]:
-        logging.debug("in the IF")  
-        opinions['text'] = opinions['text'].apply(clean_data)
-        opinionsDict = {}
-        opinionsDict["WFID"] = request.json["WFID"]
-        logging.debug("WFID")
-        logging.debug(request.json["WFID"])
-        opinionsDict["PORT"] = sys.argv[1]
-        logging.debug("PORT")
-        logging.debug(str(sys.argv[1]))
-        address = sys.argv[2]
-        opinionsDict["DATA"] = opinions.to_json()
-        requests.post(address, json=opinionsDict)
-        logging.debug("container preprocessing complete")
-        return "200 OK"
-    else:
-        logging.debug("I don't have data")
-        return "200 NOTOK"
+    logging.basicConfig(level=logging.DEBUG)
+    opinions = pd.DataFrame(json.loads(request.json["DATA"]))
+    opinions['text'] = opinions['text'].apply(clean_data)
+    opinionsDict = {}
+    opinionsDict["WFID"] = request.json["WFID"]
+    opinionsDict["PORT"] = sys.argv[1]
+    address = sys.argv[2]
+    opinionsDict["DATA"] = opinions.to_json()
+    requests.post(address, json=opinionsDict)
+    logging.debug("container preprocessing complete")
+    return "200 OK"
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8080)

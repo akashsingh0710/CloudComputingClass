@@ -18,7 +18,7 @@ import unicodedata
 cv = CountVectorizer()
 le = LabelEncoder()
 wfid = ""
-hasData = []
+hasModel = []
 port = ""
 
 def unicode_to_ascii(s):
@@ -56,53 +56,62 @@ def testing(testData, model, cv):
     return testData, pred
 
 
-@app.route('/testdata', methods=['POST'])
-def testingData():
-
-        global testData
-        testData = request.json["DATA"]
-        hasData.append(True)
-        return "200 OK"
-
-
 
 @app.route('/datasink', methods=['POST'])
 def createVec():
-    if hasData and hasData[0] == True:
-        data = pickle.loads(ast.literal_eval(request.json["DATA"]))
-        global model
-        global cv
-        global le
-        global wfid
-        global port 
+    data = pickle.loads(ast.literal_eval(request.json["DATA"]))
+    global model
+    global cv
+    global le
+    global wfid
+    global port 
 
-        model = data[0]
-        cv = data[1]
-        port = sys.argv[1]
-        le = data[2]
+    model = data[0]
+    cv = data[1]
+    port = sys.argv[1]
+    le = data[2]
+    hasModel.append(True)
+    test, pred = testing(testData, model, cv)
+    prediction = le.inverse_transform(pred)
+    wfid = request.json["WFID"]
+    dictionary = {}
+    dictionary["WFID"] = request.json["WFID"]
+    dictionary["PORT"] = sys.argv[1]
+    dictionary["DATA"] = dict(zip(test, prediction))
+    address = sys.argv[2]
+    
+    requests.post(address, json=dictionary)
+    logging.basicConfig(level=logging.DEBUG)
+    logging.debug("yes we got the model")
+    logging.debug(hasModel)
+    with open('data.json', 'w') as f:
+        json.dump(dictionary, f)
 
-        test, pred = testing([testData], model, cv)
+    return "200 OK"
+
+
+@app.route('/testdata', methods=['POST'])
+def testingData():
+
+    logging.basicConfig(level=logging.DEBUG)
+    logging.debug("before the if is called")
+    logging.debug(hasModel)
+    logging.debug("the port")
+    logging.debug(port)
+    
+    if hasModel and hasModel[0] == True:
+        data = request.json["DATA"]
+        test, pred = testing([data], model, cv)
         prediction = le.inverse_transform(pred)
-
         dictionary = {}
         dictionary["WFID"] = request.json["WFID"]
-        dictionary["PORT"] = sys.argv[1]
         dictionary["DATA"] = dict(zip(test, prediction))
-        address = sys.argv[2]
-        requests.post(address, json=dictionary)
-
-        with open('data.json', 'w') as f:
-            json.dump(dictionary, f)
-        
         address = "http://10.176.67.247:9090/output"
         requests.post(address, json=dictionary)
-        logging.debug("send to the client!!")
-        hasData[0] = False
-
+        logging.debug(dictionary)
+        # hasModel[0] = False
         return "200 OK"
-    else:
-        return "200 NOTOK"
-
+    return "NOTOK"
 
 
 if __name__ == "__main__":
