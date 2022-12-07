@@ -155,8 +155,8 @@ def deploy(workflow_dict):
     print("Workflow id: {} {}".format(id, now))
     
     vm_cap = {}
-    #if DEPLOYMENT_SCHEME != 'Round Robin':
-    vm_cap = get_vm_capacities()
+    if DEPLOYMENT_SCHEME != 'Round Robin':
+        vm_cap = get_vm_capacities()
     print(vm_cap)
     # Select machine for each component. Each new container on a machine increases capacity by 1.
     for service in workflow_dict["components"]:

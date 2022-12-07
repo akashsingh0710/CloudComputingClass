@@ -95,7 +95,7 @@ def deploy_container():
             print("container ID deployed: " , result)
             port_opened.append(port)
         else:
-            if(port in port_opened):
+            if(True):
                 print("active container forloop port:" , port)
                 print("Reusing persistent container!!")
             else:
